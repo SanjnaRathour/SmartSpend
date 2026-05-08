@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: smartspend
+      POSTGRES_PASSWORD: smartspend
+      POSTGRES_DB: smartspend
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartspend"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://smartspend:smartspend@db:5432/smartspend
+      SECRET_KEY: change-me-in-production
+      JWT_SECRET_KEY: change-me-jwt-secret
+      ENCRYPTION_KEY: wR5_bLx3fT8QwOq2ZfCnB1mAjKpLhDsPnTqYvXwEeUc=
+      CORS_ORIGIN: http://localhost:8080
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./ml:/app/../ml
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
