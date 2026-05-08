@@ -51,8 +51,10 @@ GRANT ALL PRIVILEGES ON DATABASE smartspend TO smartspend;
 psql -U smartspend -d smartspend -f backend/schema.sql
 ```
 
-**4. Train ML models**
+**4. Train ML models** *(uses the same backend venv)*
 ```bash
+cd backend && source venv/bin/activate   # Windows: venv\Scripts\activate
+cd ..
 python3 ml/train_models.py
 ```
 
